@@ -1,3 +1,0 @@
-# Test dependencies for Nebula Graph system tests
-requests>=2.25.0
-nebula3-python>=3.8.0

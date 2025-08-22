@@ -1,0 +1,13 @@
+# DMSS NG2 Project Requirements
+# Combined requirements for all project components
+
+# Core dependencies
+requests>=2.25.0
+nebula3-python>=3.8.0
+
+# Data generation and processing
+pyyaml>=6.0
+
+# Test dependencies (if needed for pytest)
+# pytest>=7.0.0
+# pytest-cov>=4.0.0
