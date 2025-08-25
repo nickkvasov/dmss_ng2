@@ -331,14 +331,19 @@ services:
       - sh
       - -c
       - |
-        for i in `seq 1 60`;do
-          var=`nebula-console -addr graphd -port 9669 -u root -p nebula -e 'ADD HOSTS "storaged0":9779,"storaged1":9779,"storaged2":9779'`;
-          if [[ $$? == 0 ]];then
-            break;
+        echo "Waiting for graphd service to be ready..."
+        for i in `seq 1 120`;do
+          if nc -z graphd 9669; then
+            echo "graphd is ready, attempting to add hosts..."
+            var=`nebula-console -addr graphd -port 9669 -u root -p nebula -e 'ADD HOSTS "storaged0":9779,"storaged1":9779,"storaged2":9779'`;
+            if [[ $$? == 0 ]];then
+              echo "Successfully added hosts to Nebula Graph"
+              break;
+            fi;
           fi;
-          sleep 1;
-          echo "retry to add hosts.";
-        done && tail -f /dev/null;
+          echo "Waiting for graphd service... (attempt $$i/120)";
+          sleep 2;
+        done && echo "Console ready" && tail -f /dev/null;
 
     depends_on:
       - graphd

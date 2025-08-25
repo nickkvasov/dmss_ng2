@@ -1,0 +1,32 @@
+-- Nebula Graph Schema for People Ontology
+-- Generated from: ../../../ontology/people/people_ontology.yaml
+-- Generated at: 2025-08-26T01:40:02.016182
+
+-- Create space for People data
+CREATE SPACE people_space (partition_num = 10, replica_factor = 1, vid_type = FIXED_STRING(32));
+USE people_space;
+
+-- Tag definitions (vertices)
+CREATE TAG PERSON (
+    person_id string,
+    sex string NULL,
+    age int NULL,
+    wealth string NULL,
+    created_at timestamp NULL
+);
+
+CREATE TAG ROLE (
+    role_id string,
+    name string,
+    description string NULL,
+    category string NULL
+);
+
+-- Edge definitions (relationships)
+CREATE EDGE HAS_ROLE (
+    assigned_date timestamp NULL,
+    is_primary bool NULL,
+    context string NULL
+);
+
+-- Indexes for performance
