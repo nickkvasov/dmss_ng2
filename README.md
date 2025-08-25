@@ -174,10 +174,21 @@ python test_nebula.py --save-results
 
 ## 🗂️ **Ontology System**
 
+### **Overview**
+The ontology system provides a structured approach to defining knowledge graph schemas using YAML-based ontology definitions. This enables consistent data modeling across different domains and database technologies.
+
 ### **Current Ontologies**
-- **POI**: Points of Interest with location and metadata
-- **People**: People and role definitions for tourism analysis
-- **People Locations**: Location events and position tracking
+- **POI (Points of Interest)**: Tourism attractions, venues, and locations with geospatial metadata
+- **People**: Individual persons with demographic information and role classifications
+- **People Locations**: Location events, position tracking, and spatial-temporal data
+
+### **Key Features**
+- ✅ **Domain-Specific**: Tailored for tourism and event impact analysis
+- ✅ **Geospatial Support**: WGS84 coordinate system with spatial relationships
+- ✅ **Temporal Tracking**: Timestamp-based event and position tracking
+- ✅ **Role-Based Modeling**: Person classification with role hierarchies
+- ✅ **Event-Driven**: Position pings and ticket entry events
+- ✅ **Cross-Domain Integration**: Unified schema generation from multiple ontologies
 
 ### **Ontology Structure**
 ```yaml
@@ -208,11 +219,18 @@ ontology:
 ```
 
 ### **Supported Data Types**
-- `string`: Text data
-- `int`: Integer numbers
-- `double`: Floating-point numbers
-- `bool`: Boolean values
-- `timestamp`: Date/time values
+- `string`: Text data (names, descriptions, categories)
+- `int`: Integer numbers (ages, capacities, counts)
+- `double`: Floating-point numbers (coordinates, ratings, distances)
+- `bool`: Boolean values (flags, status indicators)
+- `timestamp`: Date/time values (event timestamps, creation dates)
+
+### **Ontology Benefits**
+- **Consistency**: Standardized data modeling across the system
+- **Flexibility**: Easy to extend and modify domain models
+- **Reusability**: Ontologies can be used by multiple database technologies
+- **Validation**: Schema-based data validation and constraints
+- **Documentation**: Self-documenting data models with descriptions
 
 ## ⚙️ **Configuration**
 
@@ -447,7 +465,27 @@ python drop_space.py my_space --check-only
 
 ## 📄 **License**
 
-This project is part of the DMSS NG2 knowledge graph system.
+MIT License
+
+Copyright (c) 2025 DMSS NG2 Knowledge Graph System
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 
 ---
 
