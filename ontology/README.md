@@ -39,10 +39,12 @@ Ontologies are used by:
 
 Conversion scripts that transform ontologies to database-specific schemas are located in their respective ingestion directories:
 
-- **Nebula Graph POI**: `ingestors/nebula/poi/nebula_schema_generator.py`
-- **Nebula Graph People**: `ingestors/nebula/people/nebula_schema_generator.py`
-- **Nebula Graph People Locations**: `ingestors/nebula/people_locations/nebula_schema_generator.py`
-- **Other databases**: Located in their respective ingestion directories
+### Nebula Graph Schema Generation
+- **Generic Schema Generator**: `ingestors/nebula/generic_schema_generator.py` - Combines all ontologies into a single space
+- **Schema Committer**: `ingestors/nebula/commit_schema.py` - Deploys schemas to Nebula Graph database
+
+### Other databases
+- Located in their respective ingestion directories
 
 This separation ensures that:
 - Ontologies remain database-agnostic
