@@ -46,7 +46,7 @@ dmss_ng2/
 │       ├── drop_space.py             # Space management
 │       ├── schema/                   # Generated schemas
 │       └── poi/                      # POI data ingestion tools
-├── nebula/                           # Nebula Graph setup
+├── nebula_infrastructure/            # Nebula Graph infrastructure setup
 │   ├── nebula-docker-compose/        # Docker Compose configuration
 │   └── nebula-graph-studio-3.10.0/   # Graph Studio setup
 ├── ontology/                         # Ontology definitions
@@ -89,17 +89,33 @@ source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### **3. Start Nebula Graph**
+### **3. Start Nebula Graph Infrastructure**
 ```bash
 # Start Nebula Graph with Docker
-cd nebula/nebula-docker-compose
+cd nebula_infrastructure/nebula-docker-compose
 docker-compose up -d
 
 # Verify services are running
 docker-compose ps
 ```
 
-### **4. Run End-to-End Pipeline**
+### **4. Start Nebula Graph Studio**
+```bash
+# Start Nebula Graph Studio
+cd nebula_infrastructure/nebula-graph-studio-3.10.0
+docker-compose up -d
+
+# Access Studio at: http://localhost:7001
+# Default credentials: root/nebula
+```
+
+**Important Notes:**
+- **Studio Access**: Nebula Graph Studio is accessible at `http://localhost:7001`
+- **Graph Connection**: When connecting to the graph from Studio, use the actual system host IP (not localhost)
+  - Example: If your system IP is `192.168.1.100`, use that instead of `localhost`
+  - This is required because Studio runs in a Docker container and needs the host network IP
+
+### **5. Run End-to-End Pipeline**
 ```bash
 # Navigate to ingestion directory
 cd ingestors/nebula
@@ -342,6 +358,16 @@ python config_loader.py
 ./run_end_to_end.sh --mock
 ```
 
+#### **4. Nebula Graph Studio Connection**
+```bash
+# Check Studio is running
+docker-compose ps
+
+# Access Studio at http://localhost:7001
+# Use system host IP (not localhost) when connecting to graph
+# Example: 192.168.1.100:9669 instead of localhost:9669
+```
+
 ### **Debugging Commands**
 ```bash
 # Test configuration
@@ -393,6 +419,7 @@ python drop_space.py my_space --check-only
 - **Ontology System**: `ontology/README.md`
 - **Testing System**: `tests/README.md`
 - **POC Requirements**: `docs/POC_draft_v0.1.md`
+- **Infrastructure**: `nebula_infrastructure/` - Docker and Studio setup
 
 ### **Configuration**
 - **Main Configuration**: `ingestors/nebula/config.yaml`
