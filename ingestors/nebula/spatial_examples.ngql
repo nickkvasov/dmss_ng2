@@ -1,0 +1,130 @@
+-- Spatial Examples for Nebula Graph with GEOGRAPHY Type
+-- This file demonstrates how to use WKT (Well-Known Text) with Nebula Graph's spatial features
+
+-- ============================================================================
+-- 1. INSERTING SPATIAL DATA WITH WKT
+-- ============================================================================
+
+-- Insert POI with WKT POINT
+INSERT VERTEX POI(name, category, location, address, rating)
+VALUES 
+    "poi_001":("Dubai Mall", "shopping", ST_GeogFromText("POINT(55.2744 25.1972)"), "Financial Center Road", 4.5),
+    "poi_002":("Burj Khalifa", "landmark", ST_GeogFromText("POINT(55.2744 25.1972)"), "1 Sheikh Mohammed bin Rashid Blvd", 4.8),
+    "poi_003":("Dubai Marina", "entertainment", ST_GeogFromText("POINT(55.1397 25.0922)"), "Dubai Marina", 4.2);
+
+-- Insert position pings with WKT POINT
+INSERT VERTEX POSITION_PING(person_id, position, event_timestamp, accuracy)
+VALUES 
+    "ping_001":("person_001", ST_GeogFromText("POINT(55.2744 25.1972)"), timestamp("2024-01-15T10:30:00"), 5.0),
+    "ping_002":("person_001", ST_GeogFromText("POINT(55.2750 25.1975)"), timestamp("2024-01-15T10:35:00"), 3.0),
+    "ping_003":("person_002", ST_GeogFromText("POINT(55.1397 25.0922)"), timestamp("2024-01-15T11:00:00"), 4.0);
+
+-- Insert anomaly with WKT POLYGON (area of interest)
+INSERT VERTEX ANOMALY(anomaly_id, anomaly_type, severity, confidence, detected_at, location)
+VALUES 
+    "anomaly_001":("crowd_gathering", "high", 0.85, timestamp("2024-01-15T12:00:00"), 
+                   ST_GeogFromText("POLYGON((55.2740 25.1968, 55.2750 25.1968, 55.2750 25.1978, 55.2740 25.1978, 55.2740 25.1968))"));
+
+-- ============================================================================
+-- 2. SPATIAL QUERIES USING WKT FUNCTIONS
+-- ============================================================================
+
+-- Find POIs within 1km of a reference point
+LOOKUP ON POI WHERE ST_DWithin(POI.location, ST_GeogFromText("POINT(55.2744 25.1972)"), 1000);
+
+-- Find position pings within 500m of a POI
+LOOKUP ON POSITION_PING WHERE ST_DWithin(POSITION_PING.position, ST_GeogFromText("POINT(55.2744 25.1972)"), 500);
+
+-- Find anomalies that intersect with a bounding box
+LOOKUP ON ANOMALY WHERE ST_Intersects(ANOMALY.location, 
+    ST_GeogFromText("POLYGON((55.2700 25.1900, 55.2800 25.1900, 55.2800 25.2000, 55.2700 25.2000, 55.2700 25.1900))"));
+
+-- ============================================================================
+-- 3. SPATIAL RELATIONSHIP QUERIES
+-- ============================================================================
+
+-- Find people who were near a specific POI (within 100m)
+GO FROM "poi_001" OVER LOCATED_AT REVERSELY 
+WHERE ST_DWithin(POSITION_PING.position, POI.location, 100) 
+YIELD POSITION_PING.person_id, ST_Distance(POSITION_PING.position, POI.location) as distance;
+
+-- Find POIs within anomaly areas
+GO FROM "anomaly_001" OVER LOCATED_AT_APP 
+WHERE ST_Intersects(ANOMALY.location, POI.location) 
+YIELD POI.name, POI.category;
+
+-- ============================================================================
+-- 4. ADVANCED SPATIAL QUERIES
+-- ============================================================================
+
+-- Find the closest POI to each position ping
+GO FROM "ping_001" OVER LOCATED_AT 
+YIELD POSITION_PING.person_id, 
+       POI.name as nearest_poi, 
+       ST_Distance(POSITION_PING.position, POI.location) as distance 
+ORDER BY distance ASC LIMIT 1;
+
+-- Find people who moved more than 1km between position pings
+GO FROM "person_001" OVER DETECTED_BY 
+YIELD POSITION_PING.person_id,
+       ST_Distance(POSITION_PING.position, 
+                   ST_GeogFromText("POINT(55.2744 25.1972)")) as distance 
+WHERE distance > 1000;
+
+-- ============================================================================
+-- 5. SPATIAL AGGREGATION QUERIES
+-- ============================================================================
+
+-- Count POIs by category within a polygon area
+LOOKUP ON POI WHERE ST_Within(POI.location, 
+    ST_GeogFromText("POLYGON((55.2700 25.1900, 55.2800 25.1900, 55.2800 25.2000, 55.2700 25.2000, 55.2700 25.1900))"))
+YIELD POI.category, count(*) as poi_count 
+GROUP BY POI.category;
+
+-- Find the centroid of all position pings for a person
+GO FROM "person_001" OVER DETECTED_BY 
+YIELD ST_Centroid(ST_Collect(POSITION_PING.position)) as movement_centroid;
+
+-- ============================================================================
+-- 6. SPATIAL INDEX USAGE EXAMPLES
+-- ============================================================================
+
+-- These queries will automatically use the spatial indexes we created:
+-- - poi_location_idx (s2_max_level=30, s2_max_cells=8)
+-- - position_geo_idx (s2_max_level=30, s2_max_cells=8)  
+-- - anomaly_location_idx (s2_max_level=20, s2_max_cells=16)
+
+-- Fast spatial lookup using indexes
+LOOKUP ON POI WHERE ST_DWithin(POI.location, ST_GeogFromText("POINT(55.2744 25.1972)"), 1000);
+
+-- Fast intersection queries
+LOOKUP ON ANOMALY WHERE ST_Intersects(ANOMALY.location, 
+    ST_GeogFromText("POLYGON((55.2700 25.1900, 55.2800 25.1900, 55.2800 25.2000, 55.2700 25.2000, 55.2700 25.1900))"));
+
+-- ============================================================================
+-- 7. WKT FORMAT EXAMPLES
+-- ============================================================================
+
+-- POINT: "POINT(longitude latitude)"
+-- Example: "POINT(55.2744 25.1972)" - Dubai Mall coordinates
+
+-- POLYGON: "POLYGON((lon1 lat1, lon2 lat2, lon3 lat3, lon1 lat1))"
+-- Example: "POLYGON((55.2740 25.1968, 55.2750 25.1968, 55.2750 25.1978, 55.2740 25.1978, 55.2740 25.1968))"
+-- Note: First and last points must be identical to close the polygon
+
+-- LINESTRING: "LINESTRING(lon1 lat1, lon2 lat2, lon3 lat3)"
+-- Example: "LINESTRING(55.2744 25.1972, 55.2750 25.1975, 55.2755 25.1978)"
+
+-- ============================================================================
+-- 8. SPATIAL FUNCTIONS REFERENCE
+-- ============================================================================
+
+-- ST_GeogFromText(wkt_string) - Convert WKT string to GEOGRAPHY
+-- ST_DWithin(geo1, geo2, distance_meters) - Check if geometries are within distance
+-- ST_Intersects(geo1, geo2) - Check if geometries intersect
+-- ST_Within(geo1, geo2) - Check if geo1 is completely within geo2
+-- ST_Distance(geo1, geo2) - Calculate distance between geometries
+-- ST_Centroid(geo) - Find the centroid of a geometry
+-- ST_Collect(geo1, geo2, ...) - Combine multiple geometries
+-- ST_Area(geo) - Calculate area of a polygon
+-- ST_Length(geo) - Calculate length of a linestring

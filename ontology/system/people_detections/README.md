@@ -22,8 +22,9 @@ This ontology is specifically designed for:
 
 ### POSITION_PING
 Raw GPS position event emitted by a person:
-- **Required fields**: `event_id`, `person_id`, `lat`, `lon`, `timestamp`
+- **Required fields**: `event_id`, `person_id`, `position`, `timestamp`
 - **Optional fields**: `accuracy` (GPS accuracy in meters)
+- **Position format**: WKT POINT geometry (e.g., 'POINT(40.7829 -73.9654)')
 - **Coordinate system**: WGS84 (EPSG:4326)
 
 ### TICKET_ENTRY
@@ -59,8 +60,7 @@ Raw ticket entry event at a POI venue:
 ```yaml
 event_id: "pos001"
 person_id: "p001"
-lat: 40.7829
-lon: -73.9654
+position: "POINT(40.7829 -73.9654)"
 timestamp: "2024-08-26T10:30:00Z"
 accuracy: 5.2
 ```
@@ -89,8 +89,9 @@ properties:
 
 The ontology supports the following data types:
 - **string**: Text data (IDs, ticket classes, entry methods)
-- **double**: Decimal numbers (coordinates, accuracy, distance)
+- **double**: Decimal numbers (accuracy, distance)
 - **timestamp**: Date and time values (event timestamps)
+- **geometry**: Spatial data in WKT format (POINT, POLYGON, LINESTRING)
 
 ## Indexes
 

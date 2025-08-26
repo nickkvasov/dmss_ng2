@@ -32,13 +32,9 @@ ontology:
           type: "string"
           description: "Detailed description of the anomaly"
           required: false
-        - name: "location_lat"
-          type: "double"
-          description: "Latitude of anomaly location (if spatial)"
-          required: false
-        - name: "location_lon"
-          type: "double"
-          description: "Longitude of anomaly location (if spatial)"
+        - name: "location"
+          type: "geometry"
+          description: "Anomaly location as WKT POINT or POLYGON (e.g., 'POINT(40.7829 -73.9654)' or 'POLYGON((40.7829 -73.9654, 40.7830 -73.9655, 40.7831 -73.9653, 40.7829 -73.9654))')"
           required: false
         - name: "time_window_start"
           type: "timestamp"

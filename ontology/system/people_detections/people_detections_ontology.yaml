@@ -16,13 +16,9 @@ ontology:
           type: "string"
           description: "Reference to the person who emitted this position"
           required: true
-        - name: "lat"
-          type: "double"
-          description: "Latitude coordinate (WGS84)"
-          required: true
-        - name: "lon"
-          type: "double"
-          description: "Longitude coordinate (WGS84)"
+        - name: "position"
+          type: "geometry"
+          description: "GPS position as WKT POINT (e.g., 'POINT(40.7829 -73.9654)')"
           required: true
         - name: "event_timestamp"
           type: "timestamp"

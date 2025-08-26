@@ -51,9 +51,13 @@ dmss_ng2/
 │   └── nebula-graph-studio-3.10.0/   # Graph Studio setup
 ├── ontology/                         # Ontology definitions
 │   ├── README.md                     # Ontology documentation
-│   ├── poi/                          # Points of Interest ontology
-│   ├── people/                       # People ontology
-│   └── people_locations/             # People locations ontology
+│   ├── domain/                       # Domain-specific ontologies
+│   │   ├── poi/                      # Points of Interest ontology
+│   │   └── people/                   # People ontology
+│   ├── system/                       # System-level ontologies
+│   │   └── people_detections/        # People detection and tracking
+│   └── app/                          # Application ontologies
+│       └── anomaly_ontology.yaml     # Anomaly detection and alerts
 ├── scripts/                          # Utility scripts
 ├── tests/                            # Test suite
 │   ├── README.md                     # Test documentation
@@ -154,9 +158,9 @@ python commit_schema.py schema/nebula_my_space_schema.ngql
 
 ### **3. Data Ingestion**
 ```bash
-# Ingest POI data
+# Ingest POI data with unified command-line interface
 cd ingestors/nebula/poi
-python poi_ingestor.py --data-dir ../../data/generated/poi
+python poi_ingestor.py --space-name tourism_data --data-dir ../../../data/generated/new_york
 
 # Or use shell wrapper
 ./run_ingestion.sh --data-dir ../../data/generated/poi
@@ -178,9 +182,16 @@ python test_nebula.py --save-results
 The ontology system provides a structured approach to defining knowledge graph schemas using YAML-based ontology definitions. This enables consistent data modeling across different domains and database technologies.
 
 ### **Current Ontologies**
+
+#### **Domain Ontologies** (`ontology/domain/`)
 - **POI (Points of Interest)**: Tourism attractions, venues, and locations with geospatial metadata
 - **People**: Individual persons with demographic information and role classifications
-- **People Locations**: Location events, position tracking, and spatial-temporal data
+
+#### **System Ontologies** (`ontology/system/`)
+- **People Detections**: Location events, position tracking, and spatial-temporal data
+
+#### **Application Ontologies** (`ontology/app/`)
+- **Anomaly Detection**: Anomaly detection, alerting, and pattern recognition
 
 ### **Key Features**
 - ✅ **Domain-Specific**: Tailored for tourism and event impact analysis
@@ -224,6 +235,7 @@ ontology:
 - `double`: Floating-point numbers (coordinates, ratings, distances)
 - `bool`: Boolean values (flags, status indicators)
 - `timestamp`: Date/time values (event timestamps, creation dates)
+- `geometry`: Geospatial data (WKT format) - automatically converted to Nebula Graph GEOGRAPHY type
 
 ### **Ontology Benefits**
 - **Consistency**: Standardized data modeling across the system
@@ -273,11 +285,29 @@ export NEBULA_PASSWORD=my-password
 
 ## 🔧 **Core Tools**
 
+### **Unified Command-Line Interface**
+All tools now follow a consistent command-line pattern with `--space-name` as the primary parameter:
+
+```bash
+# Schema generation
+python generic_schema_generator.py --space-name tourism_data
+
+# Schema deployment
+python commit_schema.py schema/nebula_tourism_data_schema.ngql
+
+# POI data ingestion
+python poi_ingestor.py --space-name tourism_data --data-dir ../../../data/generated/new_york
+
+# Index rebuilding
+python rebuild_indexes.py --space-name tourism_data
+```
+
 ### **Schema Management**
 - **`generic_schema_generator.py`**: Generate unified schemas from multiple ontologies
 - **`commit_schema.py`**: Deploy schemas to Nebula Graph
 - **`run_end_to_end.py`**: Complete automation pipeline
 - **`drop_space.py`**: Space management utility
+- **`rebuild_indexes.py`**: Index creation and rebuilding utilities
 
 ### **Data Generation**
 - **`poi_generator.py`**: Generate synthetic POI data
@@ -285,7 +315,7 @@ export NEBULA_PASSWORD=my-password
 - **`fetch_all_areas.py`**: Batch area data fetching
 
 ### **Data Ingestion**
-- **`poi_ingestor.py`**: Load POI data into graph database
+- **`poi_ingestor.py`**: Load POI data into graph database (unified command-line interface)
 - **`test_ingestion.py`**: Test ingestion processes
 
 ### **Testing**
@@ -341,6 +371,9 @@ export NEBULA_PASSWORD=my-password
 - **Spatial Relationships**: Nearest-neighbor associations
 - **Raw Position Storage**: Preserves original lat/lon coordinates
 - **Distance Calculations**: Spatial proximity analysis
+- **Nebula Graph GEOGRAPHY**: Native spatial data type with WKT support
+- **Spatial Indexes**: S2-based spatial indexing for optimal performance
+- **Spatial Functions**: ST_DWithin, ST_Intersects, ST_Distance, ST_Within, ST_Centroid
 
 ## 🔍 **Troubleshooting**
 
@@ -414,6 +447,26 @@ python drop_space.py my_space --check-only
 - **CPU**: Low usage
 - **Network**: Only during database operations
 - **Storage**: Depends on data volume
+
+## 🆕 **Recent Improvements**
+
+### **Index Creation Fixes**
+- ✅ **String Length Specification**: Fixed variable-length string index creation with proper prefix lengths
+- ✅ **Asynchronous Index Handling**: Proper waiting periods for index creation and rebuilding
+- ✅ **Index Rebuild Script**: Dedicated `rebuild_indexes.py` for manual index management
+- ✅ **Quote Handling**: Fixed index name parsing from Nebula Graph ResultSet
+
+### **Spatial Data Enhancements**
+- ✅ **WKT Support**: Ontology files maintain WKT representation for geometry fields
+- ✅ **GEOGRAPHY Type**: Automatic conversion from `geometry` to Nebula Graph `GEOGRAPHY` type
+- ✅ **Spatial Indexes**: S2-based spatial indexing with configurable parameters
+- ✅ **Spatial Examples**: Comprehensive examples in `spatial_examples.ngql`
+
+### **Unified Command-Line Interface**
+- ✅ **Consistent Parameters**: All tools use `--space-name` as primary parameter
+- ✅ **Configuration Priority**: Command-line arguments override file settings
+- ✅ **Dry Run Support**: Data validation without database connection
+- ✅ **Flexible Configuration**: Support for both file-based and command-line configuration
 
 ## 🔮 **Future Enhancements**
 

@@ -15,7 +15,7 @@ System ontologies define entities and relationships that are related to system o
 - **Relationships**: DETECTED_BY, ENTERED_AT, LOCATED_AT, REGISTERED_AT
 - **Purpose**: Represents system events for position detection and venue entry
 - **Key Features**:
-  - Raw GPS position events with accuracy metrics
+  - Raw GPS position events as WKT POINT geometry
   - Ticket entry events with venue associations
   - Geospatial POI associations via nearest-neighbor
   - Temporal tracking with precise timestamps

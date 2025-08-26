@@ -57,7 +57,11 @@ class GenericNebulaSchemaGenerator:
             'double': 'double',
             'float': 'double',
             'bool': 'bool',
-            'timestamp': 'timestamp'
+            'timestamp': 'timestamp',
+            'geometry': 'string',  # Store WKT as string in Nebula Graph
+            'point': 'string',     # Store WKT POINT as string
+            'polygon': 'string',   # Store WKT POLYGON as string
+            'linestring': 'string' # Store WKT LINESTRING as string
         }
         return type_mapping.get(ontology_type, 'string')
     

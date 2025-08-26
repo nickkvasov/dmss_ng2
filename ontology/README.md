@@ -152,9 +152,74 @@ To add a new ontology:
 The ontologies support the following data types:
 - **string**: Text data (IDs, names, descriptions)
 - **int**: Integer numbers (ages, capacities, counts)
-- **double**: Decimal numbers (coordinates, ratings, scores)
+- **double**: Decimal numbers (ratings, scores, accuracy)
 - **bool**: Boolean values (true/false flags)
 - **timestamp**: Date and time values (ISO 8601 format)
+- **geometry**: Spatial data in WKT format (POINT, POLYGON, LINESTRING) stored as strings
+
+## WKT Geometry Types
+
+The ontologies use Well-Known Text (WKT) format for spatial data, stored as strings in Nebula Graph:
+
+### **POINT Geometry**
+- **Format**: `POINT(longitude latitude)`
+- **Example**: `POINT(-73.9654 40.7829)`
+- **Usage**: GPS coordinates, venue locations, anomaly points
+- **Storage**: String field in Nebula Graph
+
+### **POLYGON Geometry**
+- **Format**: `POLYGON((lon1 lat1, lon2 lat2, lon3 lat3, lon1 lat1))`
+- **Example**: `POLYGON((-73.9654 40.7829, -73.9655 40.7830, -73.9653 40.7831, -73.9654 40.7829))`
+- **Usage**: Venue boundaries, anomaly areas, event zones
+- **Storage**: String field in Nebula Graph
+
+### **LINESTRING Geometry**
+- **Format**: `LINESTRING(lon1 lat1, lon2 lat2, lon3 lat3)`
+- **Example**: `LINESTRING(-73.9654 40.7829, -73.9655 40.7830, -73.9656 40.7831)`
+- **Usage**: Movement paths, route tracking, boundary lines
+- **Storage**: String field in Nebula Graph
+
+### **Coordinate System**
+- **Standard**: WGS84 (EPSG:4326)
+- **Order**: Longitude first, then Latitude
+- **Precision**: 6 decimal places recommended
+- **Implementation**: WKT strings stored in Nebula Graph string fields
+
+## Spatial Data Usage
+
+### **Data Insertion Examples**
+```cypher
+// Insert POI with WKT POINT
+INSERT VERTEX POI(poi_id, name, category, location) VALUES 
+"poi001":("poi001", "Central Park", "park", "POINT(-73.9654 40.7829)");
+
+// Insert position ping with WKT POINT
+INSERT VERTEX POSITION_PING(event_id, person_id, position, event_timestamp) VALUES 
+"pos001":("pos001", "p001", "POINT(-73.9654 40.7829)", "2024-08-26T10:30:00Z");
+
+// Insert anomaly with WKT POLYGON
+INSERT VERTEX ANOMALY(anomaly_id, anomaly_type, severity, confidence, detected_at, location) VALUES 
+"anom001":("anom001", "spatial", "high", 0.95, "2024-08-26T10:30:00Z", 
+"POLYGON((-73.9654 40.7829, -73.9655 40.7830, -73.9653 40.7831, -73.9654 40.7829))");
+```
+
+### **Spatial Query Examples**
+```cypher
+// Find POIs within a polygon area
+MATCH (p:POI) 
+WHERE st_contains("POLYGON((-73.97 40.78, -73.96 40.78, -73.96 40.79, -73.97 40.79, -73.97 40.78))", p.location)
+RETURN p;
+
+// Find position pings near a POI
+MATCH (pos:POSITION_PING), (p:POI)
+WHERE st_distance(pos.position, p.location) < 100
+RETURN pos, p;
+
+// Find anomalies overlapping with a specific area
+MATCH (a:ANOMALY)
+WHERE st_intersects(a.location, "POLYGON((-73.9654 40.7829, -73.9655 40.7830, -73.9653 40.7831, -73.9654 40.7829))")
+RETURN a;
+```
 
 ## Best Practices
 

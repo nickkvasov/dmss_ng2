@@ -15,7 +15,7 @@ Domain ontologies define the fundamental entities and relationships that are spe
 - **Relationships**: IS_OF_TYPE
 - **Purpose**: Represents physical locations and venues in the tourism domain
 - **Key Features**:
-  - Geospatial coordinates (lat/lon) with WGS84 coordinate system
+  - Geospatial location as WKT POINT geometry
   - Categorical classification with confidence scoring
   - Venue capacity and operational data (opening hours)
   - Rating and descriptive information

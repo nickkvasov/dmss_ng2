@@ -20,7 +20,7 @@ Application ontologies define entities and relationships that are specific to ap
   - Alert generation and escalation workflows
   - Pattern-based detection with configurable parameters
   - Assignment and resolution tracking
-  - Geospatial and temporal context support
+  - Geospatial context with WKT POINT/POLYGON geometry support
 - **Relationship Semantics**:
   - `TRIGGERED` - Anomaly triggered an alert
   - `DETECTED_BY` - Anomaly was detected by a specific pattern

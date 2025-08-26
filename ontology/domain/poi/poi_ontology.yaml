@@ -20,13 +20,9 @@ ontology:
           type: "string"
           description: "Primary category of the POI"
           required: true
-        - name: "lat"
-          type: "double"
-          description: "Latitude coordinate"
-          required: true
-        - name: "lon"
-          type: "double"
-          description: "Longitude coordinate"
+        - name: "location"
+          type: "geometry"
+          description: "POI location as WKT POINT (e.g., 'POINT(40.7829 -73.9654)')"
           required: true
         - name: "address"
           type: "string"

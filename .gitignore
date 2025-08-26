@@ -201,6 +201,21 @@ results/
 *.json
 *.xml
 
+# Generated schema files (exclude all generated schemas)
+ingestors/nebula/schema/*.ngql
+ingestors/nebula/schema/nebula_*_schema.ngql
+ingestors/nebula/schema/nebula_*_schema_*.ngql
+ingestors/nebula/schema/*_schema.ngql
+ingestors/nebula/schema/*_schema_*.ngql
+
+# Keep schema directory README but exclude generated files
+!ingestors/nebula/schema/README.md
+
+# Exclude any other generated schema directories
+**/schema/*.ngql
+**/schema/*_schema.ngql
+**/schema/*_schema_*.ngql
+
 # YAML files - exclude all by default, then include specific ones
 *.yaml
 *.yml

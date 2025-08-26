@@ -20,6 +20,9 @@ This directory contains a comprehensive system for managing Nebula Graph schemas
 - ✅ **Validation**: Comprehensive schema and deployment validation
 - ✅ **Automation**: Fully automated end-to-end pipeline
 - ✅ **Shell Integration**: User-friendly shell script wrappers
+- ✅ **Spatial Data Support**: WKT to GEOGRAPHY conversion with spatial indexing
+- ✅ **Index Management**: Proper string length specification and asynchronous handling
+- ✅ **Unified Interface**: Consistent command-line parameters across all tools
 
 ## 📁 **File Structure**
 
@@ -34,10 +37,12 @@ ingestors/nebula/
 ├── run_end_to_end.py                   # End-to-end pipeline orchestrator
 ├── run_end_to_end.sh                   # Shell wrapper for end-to-end pipeline
 ├── drop_space.py                       # Space management utility
+├── rebuild_indexes.py                  # Index creation and rebuilding utilities
+├── spatial_examples.ngql               # Spatial data examples and queries
 ├── schema/                             # Generated schema files
 │   ├── README.md                       # Schema directory documentation
 │   └── nebula_*.ngql                   # Generated nGQL schema files
-└── poi/                                # Legacy POI-specific tools (deprecated)
+└── poi/                                # POI data ingestion tools (unified interface)
 ```
 
 ## 🚀 **Quick Start**
@@ -198,6 +203,32 @@ from config_loader import ConfigLoader
 config = ConfigLoader("config.yaml")
 nebula_config = config.get_nebula_connection("production")
 ```
+
+### **5. Spatial Features**
+**Purpose**: Native support for geographic data and spatial queries
+
+**Features**:
+- **GEOGRAPHY Type**: Native Nebula Graph GEOGRAPHY type for spatial data
+- **WKT Support**: Well-Known Text format for POINT, POLYGON, LINESTRING geometries
+- **Spatial Indexes**: Optimized S2-based spatial indexes for fast queries
+- **Spatial Functions**: Built-in functions for distance, intersection, containment queries
+- **Performance Tuning**: Configurable S2 parameters for different geometry types
+
+**Spatial Index Configuration**:
+- **POI Locations**: `s2_max_level=30, s2_max_cells=8` (optimized for points)
+- **Position Pings**: `s2_max_level=30, s2_max_cells=8` (optimized for points)
+- **Anomaly Areas**: `s2_max_level=20, s2_max_cells=16` (optimized for polygons)
+
+**Example Usage**:
+```sql
+-- Insert with WKT
+INSERT VERTEX POI(name, location) VALUES "poi_001":("Dubai Mall", ST_GeogFromText("POINT(55.2744 25.1972)"));
+
+-- Spatial query
+LOOKUP ON POI WHERE ST_DWithin(POI.location, ST_GeogFromText("POINT(55.2744 25.1972)"), 1000);
+```
+
+**See**: `spatial_examples.ngql` for comprehensive examples
 
 ### **5. Space Management (`drop_space.py`)**
 **Purpose**: Utility for managing Nebula Graph spaces
@@ -382,6 +413,80 @@ python drop_space.py my_space --check-only
 - **Migration Scripts**: Automated schema migrations
 - **Backup/Restore**: Schema backup and restoration
 - **Multi-Space Support**: Manage multiple spaces simultaneously
+
+## 🌍 **Spatial Data Features**
+
+### **WKT to GEOGRAPHY Conversion**
+The system automatically converts `geometry` type properties from ontologies to Nebula Graph's native `GEOGRAPHY` type:
+
+```yaml
+# In ontology file
+properties:
+  - name: "location"
+    type: "geometry"  # WKT format
+    description: "Geographic location"
+```
+
+```sql
+-- Generated in schema
+CREATE TAG POI (
+  location GEOGRAPHY NULL
+);
+```
+
+### **Spatial Indexes**
+S2-based spatial indexes are automatically created for geometry properties:
+
+```sql
+-- Generated spatial index
+CREATE TAG INDEX poi_location_idx ON POI(location) WITH (s2_max_level=30, s2_max_cells=8);
+```
+
+### **Spatial Functions**
+The system supports Nebula Graph's spatial functions for queries:
+
+```sql
+-- Find POIs within 5km of a point
+LOOKUP ON POI WHERE ST_DWithin(POI.location, ST_Point(55.27, 25.20), 5000);
+
+-- Find POIs intersecting with a polygon
+LOOKUP ON POI WHERE ST_Intersects(POI.location, ST_GeogFromText("POLYGON((...))"));
+```
+
+### **Spatial Examples**
+See `spatial_examples.ngql` for comprehensive spatial query examples.
+
+## 🔧 **Index Management**
+
+### **String Length Specification**
+Variable-length string properties require prefix length specification in indexes:
+
+```sql
+-- Correct: Specify length for string properties
+CREATE TAG INDEX poi_category_idx ON POI(category(64));
+
+-- Incorrect: Missing length specification
+CREATE TAG INDEX poi_category_idx ON POI(category);
+```
+
+### **Asynchronous Index Creation**
+Index creation in Nebula Graph is asynchronous. Use `rebuild_indexes.py` to rebuild after creation:
+
+```bash
+# Wait for index creation, then rebuild
+python rebuild_indexes.py --space-name tourism_data --wait 20
+
+# Rebuild specific indexes
+python rebuild_indexes.py --space-name tourism_data --indexes poi_category_idx poi_rating_idx
+
+# List existing indexes
+python rebuild_indexes.py --space-name tourism_data --list
+```
+
+### **Index Types**
+- **Basic Indexes**: String, numeric, and timestamp properties
+- **Spatial Indexes**: GEOGRAPHY properties with S2 parameters
+- **Composite Indexes**: Multiple properties on the same tag
 
 ## 📚 **Examples**
 
