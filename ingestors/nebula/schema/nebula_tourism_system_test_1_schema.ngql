@@ -1,0 +1,174 @@
+-- Unified Nebula Graph Schema for All Ontologies
+-- Generated from: ../../ontology
+-- Generated at: 2025-08-26T17:35:15.157251
+
+-- Loaded Ontologies:
+--   domain/poi: ../../ontology/domain/poi/poi_ontology.yaml
+--   domain/people: ../../ontology/domain/people/people_ontology.yaml
+--   system/people_detections: ../../ontology/system/people_detections/people_detections_ontology.yaml
+--   app: ../../ontology/app/anomaly_ontology.yaml
+
+-- Create unified space for all data
+CREATE SPACE tourism_system_test_1 (partition_num = 10, replica_factor = 1, vid_type = FIXED_STRING(32));
+USE tourism_system_test_1;
+
+-- Tag definitions (vertices) from all ontologies
+-- DOMAIN/POI ONTOLOGY
+CREATE TAG POI (
+    poi_id string,
+    name string,
+    category string,
+    lat double,
+    lon double,
+    address string NULL,
+    description string NULL,
+    rating double NULL,
+    opening_hours string NULL,
+    capacity int NULL
+);
+
+CREATE TAG POI_TYPE (
+    type_id string,
+    name string,
+    description string NULL,
+    category string NULL
+);
+
+-- DOMAIN/PEOPLE ONTOLOGY
+CREATE TAG PERSON (
+    person_id string,
+    sex string NULL,
+    age int NULL,
+    wealth string NULL,
+    created_at timestamp NULL
+);
+
+CREATE TAG PERSON_ROLE (
+    role_id string,
+    name string,
+    description string NULL,
+    category string NULL
+);
+
+-- SYSTEM/PEOPLE_DETECTIONS ONTOLOGY
+CREATE TAG POSITION_PING (
+    event_id string,
+    person_id string,
+    lat double,
+    lon double,
+    event_timestamp timestamp,
+    accuracy double NULL
+);
+
+CREATE TAG TICKET_ENTRY (
+    event_id string,
+    person_id string,
+    poi_id string,
+    entry_timestamp timestamp,
+    ticket_class string NULL
+);
+
+-- APP ONTOLOGY
+CREATE TAG ANOMALY (
+    anomaly_id string,
+    anomaly_type string,
+    severity string,
+    confidence double,
+    detected_at timestamp,
+    description string NULL,
+    location_lat double NULL,
+    location_lon double NULL,
+    time_window_start timestamp NULL,
+    time_window_end timestamp NULL
+);
+
+CREATE TAG ALERT (
+    alert_id string,
+    alert_type string,
+    priority string,
+    status string,
+    created_at timestamp,
+    acknowledged_at timestamp NULL,
+    resolved_at timestamp NULL,
+    message string,
+    recipients string NULL
+);
+
+CREATE TAG ANOMALY_PATTERN (
+    pattern_id string,
+    pattern_name string,
+    pattern_type string,
+    description string NULL,
+    parameters string NULL,
+    is_active bool,
+    created_at timestamp
+);
+
+-- Edge definitions (relationships) from all ontologies
+-- DOMAIN/POI ONTOLOGY
+CREATE EDGE IS_OF_TYPE (
+    confidence double NULL
+);
+
+-- DOMAIN/PEOPLE ONTOLOGY
+CREATE EDGE HAS_ROLE (
+    assigned_date timestamp NULL,
+    is_primary bool NULL,
+    context string NULL
+);
+
+-- SYSTEM/PEOPLE_DETECTIONS ONTOLOGY
+CREATE EDGE DETECTED_BY (
+    source string NULL,
+    confidence double NULL
+);
+
+CREATE EDGE ENTERED_AT (
+    entry_method string NULL,
+    gate_id string NULL,
+    entry_timestamp timestamp NULL
+);
+
+CREATE EDGE LOCATED_AT (
+    distance double NULL,
+    location_type string,
+    association_confidence double NULL
+);
+
+CREATE EDGE REGISTERED_AT (
+    entry_timestamp timestamp NULL,
+    registration_method string NULL
+);
+
+-- APP ONTOLOGY
+CREATE EDGE TRIGGERED (
+    trigger_time timestamp,
+    trigger_reason string NULL
+);
+
+CREATE EDGE DETECTED_BY_APP (
+    detection_time timestamp,
+    detection_score double NULL
+);
+
+CREATE EDGE RELATES_TO (
+    relation_type string,
+    relation_strength double NULL
+);
+
+CREATE EDGE LOCATED_AT_APP (
+    distance double NULL,
+    spatial_confidence double NULL
+);
+
+CREATE EDGE ESCALATED_TO (
+    escalation_time timestamp,
+    escalation_reason string NULL
+);
+
+CREATE EDGE ASSIGNED_TO (
+    assignment_time timestamp,
+    assignment_notes string NULL
+);
+
+-- Indexes for performance (from all ontologies)

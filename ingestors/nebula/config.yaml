@@ -104,11 +104,12 @@ ontology:
   # Base path to ontology directory
   base_path: "../../ontology"
   
-  # Ontology directories to include
+  # Ontology directories to include (new structure)
   directories:
-    - "poi"
-    - "people"
-    - "people_locations"
+    - "domain/poi"
+    - "domain/people"
+    - "system/people_detections"
+    - "app"
     
   # Ontology file pattern
   file_pattern: "*_ontology.yaml"

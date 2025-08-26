@@ -165,13 +165,42 @@ class GenericNebulaSchemaGenerator:
                 schema_parts.append(self._generate_tag_schema(entity))
                 schema_parts.append("")
         
-        # Generate edge schemas from all ontologies
+        # Generate edge schemas from all ontologies (with conflict resolution)
         schema_parts.append("-- Edge definitions (relationships) from all ontologies")
+        
+        # Track edges to avoid duplicates
+        seen_edges = {}
+        
         for ontology_name, ontology_info in self.ontologies.items():
             ontology_data = ontology_info['data']
             schema_parts.append(f"-- {ontology_name.upper()} ONTOLOGY")
             
             for relationship in ontology_data.get('relationships', []):
+                edge_name = relationship['name']
+                
+                # Check if we've seen this edge name before
+                if edge_name in seen_edges:
+                    existing_ontology = seen_edges[edge_name]['ontology']
+                    existing_props = seen_edges[edge_name]['properties']
+                    current_props = [p['name'] for p in relationship.get('properties', [])]
+                    
+                    # If properties are different, we need to rename one
+                    if existing_props != current_props:
+                        # Create a unique name for the current edge
+                        unique_edge_name = f"{edge_name}_{ontology_name.replace('/', '_').upper()}"
+                        relationship['name'] = unique_edge_name
+                        print(f"Warning: Renamed duplicate edge '{edge_name}' to '{unique_edge_name}' in {ontology_name}")
+                    else:
+                        # Same properties, skip this edge
+                        print(f"Warning: Skipping duplicate edge '{edge_name}' in {ontology_name} (same properties as {existing_ontology})")
+                        continue
+                
+                # Record this edge
+                seen_edges[relationship['name']] = {
+                    'ontology': ontology_name,
+                    'properties': [p['name'] for p in relationship.get('properties', [])]
+                }
+                
                 schema_parts.append(self._generate_edge_schema(relationship))
                 schema_parts.append("")
         
