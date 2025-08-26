@@ -179,8 +179,7 @@ logs/
 *.sqlite
 *.sqlite3
 
-# Configuration files with sensitive data
-config.yaml
+# Configuration files with sensitive data (exclude specific sensitive files)
 settings.yaml
 secrets.yaml
 *.key
@@ -201,6 +200,8 @@ results/
 *.csv
 *.json
 *.xml
+
+# YAML files - exclude all by default, then include specific ones
 *.yaml
 *.yml
 !docker-compose*.yaml
@@ -208,6 +209,30 @@ results/
 !Chart.yaml
 !values.yaml
 !*.tpl
+
+# Include ontology YAML files (essential source files)
+!ontology/**/*.yaml
+!ontology/**/*.yml
+
+# Include ingestion configuration files (essential source files)
+!ingestors/**/config.yaml
+!ingestors/**/config.yml
+!ingestors/**/*.yaml
+!ingestors/**/*.yml
+
+# Include generator configuration files (essential source files)
+!generators/**/config.yaml
+!generators/**/config.yml
+!generators/**/*.yaml
+!generators/**/*.yml
+
+# Include test configuration files
+!tests/**/*.yaml
+!tests/**/*.yml
+
+# Include documentation YAML files
+!docs/**/*.yaml
+!docs/**/*.yml
 
 # Archives
 *.7z
