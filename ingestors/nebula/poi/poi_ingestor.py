@@ -16,7 +16,10 @@ from datetime import datetime
 import argparse
 from nebula3.gclient.net import ConnectionPool
 from nebula3.Config import Config
-from nebula_schema_generator import NebulaSchemaGenerator
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+from generic_schema_generator import GenericNebulaSchemaGenerator
 
 
 class POIIngestor:
@@ -27,15 +30,11 @@ class POIIngestor:
         self.config = self._load_config(config_path)
         self.setup_logging()
         self.connection_pool = None
+        self.session = None
         
     def _load_config(self, config_path: Optional[str]) -> Dict[str, Any]:
         """Load configuration from YAML file or use defaults"""
-        if config_path and Path(config_path).exists():
-            with open(config_path, 'r') as f:
-                return yaml.safe_load(f)
-        
-        # Default configuration
-        return {
+        config = {
             'nebula': {
                 'host': 'localhost',
                 'port': 9669,
@@ -47,6 +46,16 @@ class POIIngestor:
             'max_retries': 3,
             'retry_delay': 1.0
         }
+        
+        # Load from file if provided and exists
+        if config_path and Path(config_path).exists():
+            with open(config_path, 'r') as f:
+                file_config = yaml.safe_load(f)
+                # Merge file config with defaults
+                if file_config:
+                    config.update(file_config)
+        
+        return config
     
     def setup_logging(self):
         """Setup logging configuration"""
@@ -122,20 +131,32 @@ class POIIngestor:
         try:
             self.logger.info(f"Setting up schema from ontology: {ontology_path}")
             
-            # Generate schema from ontology
-            schema_generator = NebulaSchemaGenerator(str(ontology_path))
-            schema_statements = schema_generator.get_schema_statements()
+            # Generate schema from ontology using the generic schema generator
+            # Use the ontology base path (parent directory) for the generic generator
+            ontology_base_path = str(ontology_path.parent.parent)  # Go up to ontology root
+            space_name = self.config['nebula']['space']
             
-            # Execute schema statements
-            for statement in schema_statements:
-                self.logger.info(f"Executing schema statement: {statement[:50]}...")
-                result = self.session.execute(statement)
-                
-                if not result.is_succeeded():
-                    self.logger.warning(f"Schema statement failed: {result.error_msg()}")
-                    # Continue with other statements even if some fail
-                else:
-                    self.logger.info("Schema statement executed successfully")
+            schema_generator = GenericNebulaSchemaGenerator(
+                ontology_base_path=ontology_base_path,
+                space_name=space_name
+            )
+            
+            # Generate the complete schema
+            schema_content = schema_generator.generate_schema()
+            
+            # Split into individual statements and execute
+            statements = [stmt.strip() for stmt in schema_content.split(';') if stmt.strip()]
+            
+            for statement in statements:
+                if statement:  # Skip empty statements
+                    self.logger.info(f"Executing schema statement: {statement[:50]}...")
+                    result = self.session.execute(statement)
+                    
+                    if not result.is_succeeded():
+                        self.logger.warning(f"Schema statement failed: {result.error_msg()}")
+                        # Continue with other statements even if some fail
+                    else:
+                        self.logger.info("Schema statement executed successfully")
             
             self.logger.info("Schema setup completed")
             
@@ -194,19 +215,20 @@ class POIIngestor:
                 self.logger.warning(f"Skipping POI with invalid coordinate format: {poi['poi_id']}")
                 continue
             
+            # Convert lat/lon to WKT POINT format for GEOGRAPHY type
+            location_wkt = f"POINT({lon} {lat})"
+            
             # Clean and normalize data
             cleaned_poi = {
                 'poi_id': str(poi['poi_id']),
                 'name': str(poi['name']).strip(),
                 'category': str(poi['category']).strip(),
-                'lat': lat,
-                'lon': lon,
+                'location': location_wkt,  # WKT format for GEOGRAPHY type
                 'address': str(poi.get('address', '')).strip() if poi.get('address') else None,
                 'description': str(poi.get('description', '')).strip() if poi.get('description') else None,
                 'rating': float(poi['rating']) if poi.get('rating') is not None else None,
                 'opening_hours': str(poi.get('opening_hours', '')).strip() if poi.get('opening_hours') else None,
-                'capacity': int(poi['capacity']) if poi.get('capacity') is not None else None,
-                'landmark_type': str(poi.get('landmark_type', '')).strip() if poi.get('landmark_type') else None
+                'capacity': int(poi['capacity']) if poi.get('capacity') is not None else None
             }
             
             valid_data.append(cleaned_poi)
@@ -216,13 +238,16 @@ class POIIngestor:
     
     def create_poi_vertex(self, poi: Dict[str, Any]) -> str:
         """Create a POI vertex in Nebula Graph"""
-        # Build property values in schema order
-        schema_props = ['poi_id', 'name', 'category', 'lat', 'lon', 'address', 'description', 'rating', 'opening_hours', 'capacity']
+        # Build property values in schema order for new schema
+        schema_props = ['poi_id', 'name', 'category', 'location', 'address', 'description', 'rating', 'opening_hours', 'capacity']
         values = []
         for key in schema_props:
             if key in poi and poi[key] is not None:
                 value = poi[key]
-                if isinstance(value, str):
+                if key == 'location':
+                    # Handle GEOGRAPHY type with ST_GeogFromText function
+                    values.append(f"ST_GeogFromText('{value}')")
+                elif isinstance(value, str):
                     # Escape single quotes in strings
                     escaped_value = value.replace("'", "\\'")
                     values.append(f"'{escaped_value}'")
@@ -232,8 +257,10 @@ class POIIngestor:
                 # Use appropriate default values based on type
                 if key == 'capacity':
                     values.append("0")  # Integer default
-                elif key in ['lat', 'lon', 'rating']:
+                elif key == 'rating':
                     values.append("0.0")  # Double default
+                elif key == 'location':
+                    values.append("ST_GeogFromText('POINT(0 0)')")  # Default GEOGRAPHY
                 else:
                     values.append("''")  # String default
         
@@ -393,19 +420,50 @@ class POIIngestor:
 def main():
     """Main function"""
     parser = argparse.ArgumentParser(description='Ingest POI data into Nebula Graph')
+    parser.add_argument('--space-name', required=True,
+                       help='Nebula Graph space name')
     parser.add_argument('--data-dir', required=True, 
                        help='Directory containing generated POI data')
-    parser.add_argument('--config', 
+    parser.add_argument('--config', default='config.yaml',
                        help='Path to configuration file')
+    parser.add_argument('--host', default='localhost',
+                       help='Nebula Graph host')
+    parser.add_argument('--port', type=int, default=9669,
+                       help='Nebula Graph port')
+    parser.add_argument('--username', default='root',
+                       help='Nebula Graph username')
+    parser.add_argument('--password', default='nebula',
+                       help='Nebula Graph password')
+    parser.add_argument('--batch-size', type=int, default=100,
+                       help='Batch size for data ingestion')
     parser.add_argument('--no-relationships', action='store_true',
                        help='Skip creating IS_OF_TYPE relationships')
     parser.add_argument('--no-schema-setup', action='store_true',
                        help='Skip schema setup from ontology')
+    parser.add_argument('--dry-run', action='store_true',
+                       help='Validate data without ingesting')
     
     args = parser.parse_args()
     
     # Initialize ingestor
     ingestor = POIIngestor(args.config)
+    
+    # Update config with command line arguments (overriding file config)
+    ingestor.config['nebula'].update({
+        'host': args.host,
+        'port': args.port,
+        'username': args.username,
+        'password': args.password,
+        'space': args.space_name
+    })
+    ingestor.config['batch_size'] = args.batch_size
+    
+    if args.dry_run:
+        # Just validate data without connecting to Nebula
+        raw_data = ingestor.load_poi_data(args.data_dir)
+        valid_data = ingestor.validate_poi_data(raw_data)
+        print(f"Dry run completed: {len(valid_data)} valid POI records found")
+        return
     
     # Ingest data
     ingestor.ingest_pois(

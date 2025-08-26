@@ -58,10 +58,11 @@ class GenericNebulaSchemaGenerator:
             'float': 'double',
             'bool': 'bool',
             'timestamp': 'timestamp',
-            'geometry': 'string',  # Store WKT as string in Nebula Graph
-            'point': 'string',     # Store WKT POINT as string
-            'polygon': 'string',   # Store WKT POLYGON as string
-            'linestring': 'string' # Store WKT LINESTRING as string
+            'geometry': 'GEOGRAPHY',  # Use Nebula Graph's native GEOGRAPHY type
+            'point': 'GEOGRAPHY',     # Use GEOGRAPHY for POINT geometries
+            'polygon': 'GEOGRAPHY',   # Use GEOGRAPHY for POLYGON geometries
+            'linestring': 'GEOGRAPHY', # Use GEOGRAPHY for LINESTRING geometries
+            'GEOGRAPHY': 'GEOGRAPHY'  # Direct GEOGRAPHY type mapping
         }
         return type_mapping.get(ontology_type, 'string')
     
@@ -110,21 +111,45 @@ class GenericNebulaSchemaGenerator:
         return "\n".join(schema_lines)
     
     def _generate_indexes(self) -> List[str]:
-        """Generate index creation statements from all ontologies"""
+        """Generate index statements for performance optimization including spatial indexes"""
         index_statements = []
         
-        for ontology_name, ontology_info in self.ontologies.items():
-            ontology_data = ontology_info['data']
-            indexes = ontology_data.get('indexes', [])
-            
-            for index in indexes:
-                index_name = f"{ontology_name}_{index['name']}"  # Prefix with ontology name
-                entity = index['entity']
-                properties = index['properties']
-                
-                props_str = ", ".join(properties)
-                stmt = f"CREATE TAG INDEX {index_name} ON {entity}({props_str});"
-                index_statements.append(stmt)
+        # Add indexes for common query patterns with proper string lengths
+        # POI indexes
+        index_statements.append("-- POI indexes")
+        index_statements.append("CREATE TAG INDEX poi_category_idx ON POI(category(64));")
+        index_statements.append("CREATE TAG INDEX poi_rating_idx ON POI(rating);")
+        # Spatial index for POI locations
+        index_statements.append("CREATE TAG INDEX poi_location_idx ON POI(location) WITH (s2_max_level=30, s2_max_cells=8);")
+        index_statements.append("")
+        
+        # People indexes
+        index_statements.append("-- People indexes")
+        index_statements.append("CREATE TAG INDEX person_role_idx ON PERSON_ROLE(name(64));")
+        index_statements.append("")
+        
+        # Position tracking indexes
+        index_statements.append("-- Position tracking indexes")
+        index_statements.append("CREATE TAG INDEX position_person_time_idx ON POSITION_PING(person_id(64), event_timestamp);")
+        index_statements.append("CREATE TAG INDEX ticket_entry_person_time_idx ON TICKET_ENTRY(person_id(64), entry_timestamp);")
+        # Spatial index for position pings
+        index_statements.append("CREATE TAG INDEX position_geo_idx ON POSITION_PING(position) WITH (s2_max_level=30, s2_max_cells=8);")
+        index_statements.append("")
+        
+        # Anomaly indexes
+        index_statements.append("-- Anomaly indexes")
+        index_statements.append("CREATE TAG INDEX anomaly_type_severity_idx ON ANOMALY(anomaly_type(64), severity(64));")
+        index_statements.append("CREATE TAG INDEX alert_status_priority_idx ON ALERT(status(64), priority(64));")
+        # Spatial index for anomaly locations (tuned for polygons)
+        index_statements.append("CREATE TAG INDEX anomaly_location_idx ON ANOMALY(location) WITH (s2_max_level=20, s2_max_cells=16);")
+        index_statements.append("")
+        
+        # Note: Index creation is asynchronous
+        # Wait ~20 seconds after schema creation before running REBUILD statements
+        # Use rebuild_indexes.py script to rebuild indexes after waiting
+        index_statements.append("-- Index creation completed")
+        index_statements.append("-- Run: python rebuild_indexes.py --space-name <space_name> --wait 20")
+        index_statements.append("")
         
         return index_statements
     

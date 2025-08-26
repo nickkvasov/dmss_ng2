@@ -5,11 +5,11 @@ nebula:
   port: 9669
   username: "root"
   password: "nebula"
-  space: "poi_space"
+  space: "tourism_newyork_1"
 
 # Ontology settings
 ontology:
-  path: "../../../ontology/poi/poi_ontology.yaml"
+  path: "../../../ontology/domain/poi/poi_ontology.yaml"
   auto_setup_schema: true
 
 # Ingestion settings
