@@ -1,5 +1,5 @@
 ontology:
-  name: "People Locations Ontology"
+  name: "People Detections Ontology"
   version: "1.0"
   description: "Ontology for handling location and position information related to people in tourism and event impact analysis"
   
@@ -59,8 +59,8 @@ ontology:
 
   # Relationship Types (Edges)
   relationships:
-    - name: "EMITTED"
-      description: "Person emitted a position ping event"
+    - name: "DETECTED_BY"
+      description: "Person detected by a position ping event"
       source: "PERSON"
       target: "POSITION_PING"
       properties:
@@ -73,7 +73,7 @@ ontology:
           description: "Confidence level of the position data"
           required: false
 
-    - name: "ENTERED"
+    - name: "ENTERED_AT"
       description: "Person entered a POI via ticket entry"
       source: "PERSON"
       target: "TICKET_ENTRY"
@@ -86,18 +86,39 @@ ontology:
           type: "string"
           description: "Specific gate or entry point used"
           required: false
+        - name: "entry_timestamp"
+          type: "timestamp"
+          description: "When the entry occurred"
+          required: false
 
-    - name: "AT_POI"
+    - name: "LOCATED_AT"
       description: "Position ping occurred at or near a POI (nearest-neighbor association)"
       source: "POSITION_PING"
       target: "POI"
       properties:
         - name: "distance"
           type: "double"
-          description: "Distance in meters from POI center"
+          description: "Distance from POI center in meters"
           required: false
-        - name: "association_type"
+        - name: "location_type"
           type: "string"
-          description: "Type of association (nearest, within_polygon, etc.)"
+          description: "Type of location (nearest, within_polygon, etc.)"
+          required: true
+        - name: "association_confidence"
+          type: "double"
+          description: "Confidence in the POI association"
           required: false
 
+    - name: "REGISTERED_AT"
+      description: "Ticket entry occurred at or near a POI (nearest-neighbor association)"
+      source: "TICKET_ENTRY"
+      target: "POI"
+      properties:
+        - name: "entry_timestamp"
+          type: "timestamp"
+          description: "When the entry was registered"
+          required: false
+        - name: "registration_method"
+          type: "string"
+          description: "Method of registration (automatic, manual)"
+          required: false

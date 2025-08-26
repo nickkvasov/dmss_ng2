@@ -1,0 +1,208 @@
+ontology:
+  name: "Anomaly and Alert Detection Ontology"
+  version: "1.0"
+  description: "Ontology for detecting and managing anomalies and alerts in tourism and event impact analysis"
+  
+  # Entity Types (Vertices)
+  entities:
+    - name: "ANOMALY"
+      description: "Detected anomaly in the system"
+      properties:
+        - name: "anomaly_id"
+          type: "string"
+          description: "Unique identifier for the anomaly"
+          required: true
+        - name: "anomaly_type"
+          type: "string"
+          description: "Type of anomaly (spatial, temporal, behavioral, etc.)"
+          required: true
+        - name: "severity"
+          type: "string"
+          description: "Severity level (low, medium, high, critical)"
+          required: true
+        - name: "confidence"
+          type: "double"
+          description: "Confidence score of the anomaly detection (0.0-1.0)"
+          required: true
+        - name: "detected_at"
+          type: "timestamp"
+          description: "When the anomaly was detected"
+          required: true
+        - name: "description"
+          type: "string"
+          description: "Detailed description of the anomaly"
+          required: false
+        - name: "location_lat"
+          type: "double"
+          description: "Latitude of anomaly location (if spatial)"
+          required: false
+        - name: "location_lon"
+          type: "double"
+          description: "Longitude of anomaly location (if spatial)"
+          required: false
+        - name: "time_window_start"
+          type: "timestamp"
+          description: "Start of the time window for the anomaly"
+          required: false
+        - name: "time_window_end"
+          type: "timestamp"
+          description: "End of the time window for the anomaly"
+          required: false
+
+    - name: "ALERT"
+      description: "Alert generated from anomaly detection"
+      properties:
+        - name: "alert_id"
+          type: "string"
+          description: "Unique identifier for the alert"
+          required: true
+        - name: "alert_type"
+          type: "string"
+          description: "Type of alert (notification, warning, emergency)"
+          required: true
+        - name: "priority"
+          type: "string"
+          description: "Priority level (low, medium, high, urgent)"
+          required: true
+        - name: "status"
+          type: "string"
+          description: "Current status (active, acknowledged, resolved, dismissed)"
+          required: true
+        - name: "created_at"
+          type: "timestamp"
+          description: "When the alert was created"
+          required: true
+        - name: "acknowledged_at"
+          type: "timestamp"
+          description: "When the alert was acknowledged"
+          required: false
+        - name: "resolved_at"
+          type: "timestamp"
+          description: "When the alert was resolved"
+          required: false
+        - name: "message"
+          type: "string"
+          description: "Alert message content"
+          required: true
+        - name: "recipients"
+          type: "string"
+          description: "Comma-separated list of alert recipients"
+          required: false
+
+    - name: "ANOMALY_PATTERN"
+      description: "Pattern or rule used for anomaly detection"
+      properties:
+        - name: "pattern_id"
+          type: "string"
+          description: "Unique identifier for the pattern"
+          required: true
+        - name: "pattern_name"
+          type: "string"
+          description: "Name of the detection pattern"
+          required: true
+        - name: "pattern_type"
+          type: "string"
+          description: "Type of pattern (threshold, statistical, machine_learning)"
+          required: true
+        - name: "description"
+          type: "string"
+          description: "Description of the pattern"
+          required: false
+        - name: "parameters"
+          type: "string"
+          description: "JSON string of pattern parameters"
+          required: false
+        - name: "is_active"
+          type: "bool"
+          description: "Whether the pattern is currently active"
+          required: true
+        - name: "created_at"
+          type: "timestamp"
+          description: "When the pattern was created"
+          required: true
+
+  # Relationship Types (Edges)
+  relationships:
+    - name: "TRIGGERED"
+      description: "Anomaly triggered an alert"
+      source: "ANOMALY"
+      target: "ALERT"
+      properties:
+        - name: "trigger_time"
+          type: "timestamp"
+          description: "When the alert was triggered"
+          required: true
+        - name: "trigger_reason"
+          type: "string"
+          description: "Reason for triggering the alert"
+          required: false
+
+    - name: "DETECTED_BY"
+      description: "Anomaly was detected by a specific pattern"
+      source: "ANOMALY"
+      target: "ANOMALY_PATTERN"
+      properties:
+        - name: "detection_time"
+          type: "timestamp"
+          description: "When the detection occurred"
+          required: true
+        - name: "detection_score"
+          type: "double"
+          description: "Detection score from the pattern"
+          required: false
+
+    - name: "RELATES_TO"
+      description: "Anomaly relates to a specific entity (person, POI, etc.)"
+      source: "ANOMALY"
+      target: "PERSON"
+      properties:
+        - name: "relation_type"
+          type: "string"
+          description: "Type of relation (involves, affects, originates_from)"
+          required: true
+        - name: "relation_strength"
+          type: "double"
+          description: "Strength of the relation (0.0-1.0)"
+          required: false
+
+    - name: "LOCATED_AT"
+      description: "Anomaly is located at a specific POI"
+      source: "ANOMALY"
+      target: "POI"
+      properties:
+        - name: "distance"
+          type: "double"
+          description: "Distance from POI center in meters"
+          required: false
+        - name: "spatial_confidence"
+          type: "double"
+          description: "Confidence in spatial association"
+          required: false
+
+    - name: "ESCALATED_TO"
+      description: "Alert was escalated to another alert"
+      source: "ALERT"
+      target: "ALERT"
+      properties:
+        - name: "escalation_time"
+          type: "timestamp"
+          description: "When the escalation occurred"
+          required: true
+        - name: "escalation_reason"
+          type: "string"
+          description: "Reason for escalation"
+          required: false
+
+    - name: "ASSIGNED_TO"
+      description: "Alert was assigned to a person for handling"
+      source: "ALERT"
+      target: "PERSON"
+      properties:
+        - name: "assignment_time"
+          type: "timestamp"
+          description: "When the assignment occurred"
+          required: true
+        - name: "assignment_notes"
+          type: "string"
+          description: "Notes about the assignment"
+          required: false

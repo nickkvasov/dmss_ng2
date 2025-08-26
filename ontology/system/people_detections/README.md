@@ -1,10 +1,10 @@
-# People Locations Ontology
+# People Detections Ontology
 
-This ontology defines the data structure for handling position and location information related to people in the tourism and event impact system.
+This ontology defines the data structure for handling position detection and location events related to people in the tourism and event impact system.
 
 ## Overview
 
-The People Locations Ontology is designed to handle:
+The People Detections Ontology is designed to handle:
 - **Raw position events** (GPS pings) with spatiotemporal attributes
 - **Raw ticket entry events** at POI venues
 - **Geospatial associations** between positions and POIs
@@ -34,11 +34,12 @@ Raw ticket entry event at a POI venue:
 ## Relationship Types (Edges)
 
 ### Event Relationships
-- **EMITTED**: Person → PositionPing (person emitted a GPS position)
-- **ENTERED**: Person → TicketEntry (person entered a POI via ticket)
+- **DETECTED_BY**: Person → PositionPing (person detected by a position ping event)
+- **ENTERED_AT**: Person → TicketEntry (person entered a POI via ticket entry)
 
 ### Geospatial Relationships
-- **AT_POI**: PositionPing → POI (position occurred at/near a POI via nearest-neighbor association)
+- **LOCATED_AT**: PositionPing → POI (position occurred at/near a POI via nearest-neighbor association)
+- **REGISTERED_AT**: TicketEntry → POI (ticket entry registered at a POI)
 
 ## Key Design Principles
 
@@ -77,10 +78,11 @@ ticket_class: "vip"
 ```yaml
 source: "pos001"  # position_ping event_id
 target: "poi123"  # poi_id
-relationship: "AT_POI"
+relationship: "LOCATED_AT"
 properties:
   distance: 25.5
-  association_type: "nearest"
+  location_type: "nearest"
+  association_confidence: 0.95
 ```
 
 ## Data Types
