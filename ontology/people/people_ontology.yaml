@@ -1,0 +1,71 @@
+ontology:
+  name: "Tourism & Event Impact People Ontology"
+  version: "1.0"
+  description: "Domain-specific ontology for people and roles in tourism and event impact analysis"
+  
+  # Entity Types (Vertices)
+  entities:
+    - name: "PERSON"
+      description: "Individual person in tourism/event context"
+      properties:
+        - name: "person_id"
+          type: "string"
+          description: "Unique identifier for the person"
+          required: true
+        - name: "sex"
+          type: "string"
+          description: "Sex of the person (optional sociographic info)"
+          required: false
+        - name: "age"
+          type: "int"
+          description: "Age of the person (optional sociographic info)"
+          required: false
+        - name: "wealth"
+          type: "string"
+          description: "Wealth category (optional sociographic info)"
+          required: false
+        - name: "created_at"
+          type: "timestamp"
+          description: "When this person record was created"
+          required: false
+
+    - name: "PERSON_ROLE"
+      description: "Role classification for persons in tourism/event context"
+      properties:
+        - name: "role_id"
+          type: "string"
+          description: "Unique identifier for the role"
+          required: true
+        - name: "name"
+          type: "string"
+          description: "Name of the role (tourist, local, staff, police)"
+          required: true
+        - name: "description"
+          type: "string"
+          description: "Description of the role"
+          required: false
+        - name: "category"
+          type: "string"
+          description: "Category of the role (visitor, resident, service, security)"
+          required: false
+
+  # Relationship Types (Edges)
+  relationships:
+    - name: "HAS_ROLE"
+      description: "Person has a specific role in tourism/event context"
+      source: "PERSON"
+      target: "PERSON_ROLE"
+      properties:
+        - name: "assigned_date"
+          type: "timestamp"
+          description: "When the role was assigned"
+          required: false
+        - name: "is_primary"
+          type: "bool"
+          description: "Whether this is the primary role for the person"
+          required: false
+        - name: "context"
+          type: "string"
+          description: "Context or reason for role assignment"
+          required: false
+

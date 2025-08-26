@@ -1,0 +1,103 @@
+ontology:
+  name: "People Locations Ontology"
+  version: "1.0"
+  description: "Ontology for handling location and position information related to people in tourism and event impact analysis"
+  
+  # Entity Types (Vertices)
+  entities:
+    - name: "POSITION_PING"
+      description: "Raw GPS position event emitted by a person"
+      properties:
+        - name: "event_id"
+          type: "string"
+          description: "Unique identifier for the position event"
+          required: true
+        - name: "person_id"
+          type: "string"
+          description: "Reference to the person who emitted this position"
+          required: true
+        - name: "lat"
+          type: "double"
+          description: "Latitude coordinate (WGS84)"
+          required: true
+        - name: "lon"
+          type: "double"
+          description: "Longitude coordinate (WGS84)"
+          required: true
+        - name: "event_timestamp"
+          type: "timestamp"
+          description: "Timestamp of the position ping"
+          required: true
+        - name: "accuracy"
+          type: "double"
+          description: "GPS accuracy in meters (optional)"
+          required: false
+
+    - name: "TICKET_ENTRY"
+      description: "Raw ticket entry event at a POI venue"
+      properties:
+        - name: "event_id"
+          type: "string"
+          description: "Unique identifier for the ticket entry event"
+          required: true
+        - name: "person_id"
+          type: "string"
+          description: "Reference to the person who entered"
+          required: true
+        - name: "poi_id"
+          type: "string"
+          description: "Reference to the POI where entry occurred"
+          required: true
+        - name: "entry_timestamp"
+          type: "timestamp"
+          description: "Timestamp of the ticket entry"
+          required: true
+        - name: "ticket_class"
+          type: "string"
+          description: "Ticket class or type (optional)"
+          required: false
+
+  # Relationship Types (Edges)
+  relationships:
+    - name: "EMITTED"
+      description: "Person emitted a position ping event"
+      source: "PERSON"
+      target: "POSITION_PING"
+      properties:
+        - name: "source"
+          type: "string"
+          description: "Source of the position data (GPS, WiFi, etc.)"
+          required: false
+        - name: "confidence"
+          type: "double"
+          description: "Confidence level of the position data"
+          required: false
+
+    - name: "ENTERED"
+      description: "Person entered a POI via ticket entry"
+      source: "PERSON"
+      target: "TICKET_ENTRY"
+      properties:
+        - name: "entry_method"
+          type: "string"
+          description: "Method of entry (scanned, manual, etc.)"
+          required: false
+        - name: "gate_id"
+          type: "string"
+          description: "Specific gate or entry point used"
+          required: false
+
+    - name: "AT_POI"
+      description: "Position ping occurred at or near a POI (nearest-neighbor association)"
+      source: "POSITION_PING"
+      target: "POI"
+      properties:
+        - name: "distance"
+          type: "double"
+          description: "Distance in meters from POI center"
+          required: false
+        - name: "association_type"
+          type: "string"
+          description: "Type of association (nearest, within_polygon, etc.)"
+          required: false
+

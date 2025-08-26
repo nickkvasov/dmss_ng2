@@ -1,0 +1,40 @@
+# POI Ingestor Configuration
+
+nebula:
+  host: "localhost"
+  port: 9669
+  username: "root"
+  password: "nebula"
+  space: "poi_space"
+
+# Ontology settings
+ontology:
+  path: "../../../ontology/poi/poi_ontology.yaml"
+  auto_setup_schema: true
+
+# Ingestion settings
+batch_size: 100
+max_retries: 3
+retry_delay: 1.0
+
+# Relationship settings
+type_relationship:
+  enabled: true
+  confidence_threshold: 0.8
+
+# Data validation settings
+validation:
+  required_fields: ["poi_id", "name", "category", "lat", "lon"]
+  coordinate_bounds:
+    lat_min: -90.0
+    lat_max: 90.0
+    lon_min: -180.0
+    lon_max: 180.0
+  rating_bounds:
+    min: 0.0
+    max: 5.0
+
+# Logging settings
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"

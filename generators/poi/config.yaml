@@ -1,0 +1,135 @@
+# POI Generator Configuration
+# This file configures the POI generator for different cities and categories
+
+# City configuration
+city_bounds:
+  # New York City (default)
+  name: "New York City"
+  min_lat: 40.7
+  max_lat: 40.8
+  min_lon: -74.0
+  max_lon: -73.9
+
+  # Alternative cities (uncomment to use):
+  # London
+  # name: "London"
+  # min_lat: 51.4
+  # max_lat: 51.6
+  # min_lon: -0.2
+  # max_lon: 0.1
+
+  # Paris
+  # name: "Paris"
+  # min_lat: 48.8
+  # max_lat: 48.9
+  # min_lon: 2.3
+  # max_lon: 2.4
+
+  # Tokyo
+  # name: "Tokyo"
+  # min_lat: 35.6
+  # max_lat: 35.8
+  # min_lon: 139.6
+  # max_lon: 139.8
+
+# POI Categories configuration
+poi_categories:
+  attractions:
+    count: 50
+    templates:
+      - "Museum of {theme}"
+      - "{name} Park"
+      - "{name} Gallery"
+      - "Historic {name}"
+      - "{name} Monument"
+      - "Science Center"
+      - "Art Museum"
+      - "Natural History Museum"
+      - "Botanical Gardens"
+      - "Zoo"
+      - "Aquarium"
+      - "Planetarium"
+      - "Observatory"
+      - "Library"
+      - "Cultural Center"
+
+  hotels:
+    count: 30
+    templates:
+      - "{name} Hotel"
+      - "{name} Inn"
+      - "{name} Resort"
+      - "{name} Suites"
+      - "Grand {name} Hotel"
+      - "{name} Plaza"
+      - "{name} Tower"
+      - "{name} Lodge"
+      - "{name} Manor"
+      - "{name} Palace"
+
+  restaurants:
+    count: 80
+    templates:
+      - "{name} Restaurant"
+      - "{name} Bistro"
+      - "{name} Cafe"
+      - "{name} Grill"
+      - "{name} Kitchen"
+      - "{name} Diner"
+      - "{name} Bar & Grill"
+      - "{name} Tavern"
+      - "{name} Pub"
+      - "{name} Steakhouse"
+      - "{name} Pizzeria"
+      - "{name} Deli"
+      - "{name} Bakery"
+      - "{name} Sushi Bar"
+      - "{name} Wine Bar"
+
+  venues:
+    count: 20
+    templates:
+      - "{name} Arena"
+      - "{name} Stadium"
+      - "{name} Theater"
+      - "{name} Concert Hall"
+      - "{name} Convention Center"
+      - "{name} Auditorium"
+      - "{name} Amphitheater"
+      - "{name} Exhibition Hall"
+      - "{name} Conference Center"
+      - "{name} Event Space"
+      - "{name} Ballroom"
+      - "{name} Opera House"
+      - "{name} Cinema"
+      - "{name} Music Hall"
+      - "{name} Performance Center"
+
+  # Additional categories for specific use cases
+  shopping:
+    count: 40
+    templates:
+      - "{name} Mall"
+      - "{name} Shopping Center"
+      - "{name} Market"
+      - "{name} Plaza"
+      - "{name} Arcade"
+      - "{name} Boutique"
+      - "{name} Department Store"
+      - "{name} Outlet"
+      - "{name} Bazaar"
+      - "{name} Market Square"
+
+  transportation:
+    count: 25
+    templates:
+      - "{name} Station"
+      - "{name} Terminal"
+      - "{name} Hub"
+      - "{name} Airport"
+      - "{name} Port"
+      - "{name} Bus Station"
+      - "{name} Train Station"
+      - "{name} Metro Station"
+      - "{name} Ferry Terminal"
+      - "{name} Parking Garage"

@@ -1,0 +1,82 @@
+ontology:
+  name: "Simple POI Ontology"
+  version: "1.0"
+  description: "Simple ontology for Points of Interest raw data ingestion"
+  
+  # Entity Types (Vertices)
+  entities:
+    - name: "POI"
+      description: "Point of Interest - any location that may be useful or interesting"
+      properties:
+        - name: "poi_id"
+          type: "string"
+          description: "Unique identifier for the POI"
+          required: true
+        - name: "name"
+          type: "string"
+          description: "Name of the POI"
+          required: true
+        - name: "category"
+          type: "string"
+          description: "Primary category of the POI"
+          required: true
+        - name: "lat"
+          type: "double"
+          description: "Latitude coordinate"
+          required: true
+        - name: "lon"
+          type: "double"
+          description: "Longitude coordinate"
+          required: true
+        - name: "address"
+          type: "string"
+          description: "Street address"
+          required: false
+        - name: "description"
+          type: "string"
+          description: "Detailed description of the POI"
+          required: false
+        - name: "rating"
+          type: "double"
+          description: "Average rating (0.0-5.0)"
+          required: false
+        - name: "opening_hours"
+          type: "string"
+          description: "Opening hours information"
+          required: false
+        - name: "capacity"
+          type: "int"
+          description: "Maximum capacity of the venue"
+          required: false
+
+    - name: "POI_TYPE"
+      description: "Type classification for Points of Interest"
+      properties:
+        - name: "type_id"
+          type: "string"
+          description: "Unique identifier for the POI type"
+          required: true
+        - name: "name"
+          type: "string"
+          description: "Name of the POI type"
+          required: true
+        - name: "description"
+          type: "string"
+          description: "Description of the POI type"
+          required: false
+        - name: "category"
+          type: "string"
+          description: "Category this type belongs to"
+          required: false
+
+  # Simple Relationship Types (Edges)
+  relationships:
+    - name: "IS_OF_TYPE"
+      description: "POI is of a specific type"
+      source: "POI"
+      target: "POI_TYPE"
+      properties:
+        - name: "confidence"
+          type: "double"
+          description: "Confidence score for type classification"
+          required: false

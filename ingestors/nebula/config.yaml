@@ -1,0 +1,140 @@
+# Nebula Graph Configuration
+# Configuration parameters for connecting to Nebula Graph database
+
+# Connection Settings
+nebula:
+  # Database connection parameters
+  connection:
+    host: "localhost"
+    port: 9669
+    username: "root"
+    password: "nebula"
+    
+    # Connection pool settings
+    pool:
+      min_connections: 2
+      max_connections: 10
+      connection_timeout: 60  # seconds
+      retry_attempts: 3
+      
+    # SSL/TLS settings (for production)
+    ssl:
+      enabled: false
+      verify_peer: false
+      ca_cert: ""
+      cert: ""
+      key: ""
+
+# Schema Generation Settings
+schema:
+  # Default space name for unified schemas
+  default_space_name: "unified_space"
+  
+  # Schema generation options
+  generation:
+    # Include indexes in generated schema
+    include_indexes: true
+    
+    # Include comments in generated schema
+    include_comments: true
+    
+    # Default partition and replica settings
+    partition_num: 10
+    replica_factor: 1
+    vid_type: "FIXED_STRING(32)"
+    
+  # Output settings
+  output:
+    # Default schema directory
+    schema_dir: "schema"
+    
+    # Default output filename pattern
+    filename_pattern: "nebula_{space_name}_schema.ngql"
+    
+    # Timestamped filename pattern
+    timestamped_pattern: "nebula_{space_name}_schema_{timestamp}.ngql"
+
+# Schema Deployment Settings
+deployment:
+  # Default deployment options
+  default:
+    # Whether to use dry-run by default
+    dry_run: false
+    
+    # Whether to use mock mode by default
+    mock_mode: false
+    
+    # Stop on first error
+    stop_on_error: true
+    
+    # Show detailed output
+    verbose: true
+    
+  # Environment-specific settings
+  environments:
+    development:
+      host: "localhost"
+      port: 9669
+      username: "root"
+      password: "nebula"
+      dry_run: false
+      mock_mode: false
+      
+    staging:
+      host: "nebula-staging.example.com"
+      port: 9669
+      username: "nebula_user"
+      password: "staging_password"
+      dry_run: true  # Always dry-run in staging
+      mock_mode: false
+      
+    production:
+      host: "nebula-prod.example.com"
+      port: 9669
+      username: "nebula_user"
+      password: "prod_password"
+      ssl:
+        enabled: true
+        verify_peer: true
+      dry_run: false
+      mock_mode: false
+
+# Ontology Settings
+ontology:
+  # Base path to ontology directory
+  base_path: "../../ontology"
+  
+  # Ontology directories to include
+  directories:
+    - "poi"
+    - "people"
+    - "people_locations"
+    
+  # Ontology file pattern
+  file_pattern: "*_ontology.yaml"
+
+# Logging Settings
+logging:
+  # Log level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+  level: "INFO"
+  
+  # Log format
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+  # Log file (optional)
+  file: null
+  
+  # Console output
+  console: true
+
+# Security Settings
+security:
+  # Environment variable names for sensitive data
+  env_vars:
+    host: "NEBULA_HOST"
+    port: "NEBULA_PORT"
+    username: "NEBULA_USERNAME"
+    password: "NEBULA_PASSWORD"
+    
+  # Whether to allow password in config file (not recommended for production)
+  allow_password_in_config: false
