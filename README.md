@@ -1,4 +1,4 @@
-# DMSS NG2 - Knowledge Graph System
+# DMSS Nebula Graph 2 - Knowledge Graph System
 
 ## Overview
 
